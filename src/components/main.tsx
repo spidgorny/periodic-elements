@@ -1,18 +1,39 @@
-import { h, Component } from "preact";
-import { Provider } from "redux-zero/preact";
+import {h, Component} from "preact";
+import {Provider} from "redux-zero/preact";
 import appStore from "../store";
 import ExchangesDownload from "./exchanges-download";
 import * as _ from 'lodash';
 import PriceTable from "./price-table";
+import ExchangeTable from "./exchange-table";
 
-interface ExchangeInfo {
+export interface ExchangeInfo {
 	code: string;
 	active: boolean;
+}
+
+export interface CoinInfo {
+	code: string;
+}
+
+export interface ExchangeCoin {
+	exchange: ExchangeInfo;
+	coin: CoinInfo;
+	gain: number;
+}
+
+export interface ExchangeCoinTable {
+	[key: string]: {
+		[key: string]: ExchangeCoin;
+	}
 }
 
 export default class Main extends Component<any, any> {
 
 	exchanges: ExchangeInfo[];
+
+	coins: CoinInfo[];
+
+	exchangeCoins: ExchangeCoinTable;
 
 	constructor() {
 		super();
@@ -25,6 +46,30 @@ export default class Main extends Component<any, any> {
 				active: false,
 			};
 		});
+
+		this.coins = _.range(50).map(i => {
+			return {
+				code: String.fromCharCode('A'.charCodeAt(0) +
+					Math.random() * 26) +
+					String.fromCharCode('A'.charCodeAt(0) +
+						Math.random() * 26) +
+					String.fromCharCode('A'.charCodeAt(0) +
+						Math.random() * 26),
+			};
+		});
+
+		this.exchangeCoins = {};
+		for (let e of this.exchanges) {
+			const set = {};
+			for (let c of this.coins) {
+				set[c.code] = {
+					exchange: e,
+					coin: c,
+					gain: Math.random() / 49.0,
+				}
+			}
+			this.exchangeCoins[e.code] = set;
+		}
 	}
 
 	render() {
@@ -33,8 +78,15 @@ export default class Main extends Component<any, any> {
 			<Provider store={appStore}>
 				<div>
 					<ExchangesDownload
-						exchanges={this.exchanges}></ExchangesDownload>
-					<PriceTable columns={this.exchanges}></PriceTable>
+						exchanges={this.exchanges}/>
+					<PriceTable
+						exchanges={this.exchanges}
+						coins={this.coins}
+						exchangeCoins={this.exchangeCoins}
+					/>
+					<ExchangeTable
+						exchanges={this.exchanges}
+					/>
 				</div>
 			</Provider>
 		);

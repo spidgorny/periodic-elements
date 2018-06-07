@@ -1,8 +1,11 @@
 import {h, Component} from "preact";
+import {CoinInfo, ExchangeCoin, ExchangeInfo} from "./main";
 
 export default class PriceTable extends Component<any, any> {
 
 	columns = this.props.exchanges;
+	rows = this.props.coins;
+	exchangeCoins = this.props.exchangeCoins;
 
 	constructor(props) {
 		super(props);
@@ -10,29 +13,25 @@ export default class PriceTable extends Component<any, any> {
 	}
 
 	render() {
-		console.log('PriceTable.render', this.props.columns.length);
+		console.log('PriceTable.render', this.columns.length);
 		return (
-			<table class="table is-fullwidth is-narrow is-separated has-background-black">
+			<table class="table is-fullwidth is-narrow is-separated has-background-black is-size-7">
 				<thead>
-					<tr>
+					<tr class="has-text-grey">
 						<td></td>
-						{this.props.columns.map(el => {
-							return <th>{el.code}</th>;
+						{this.columns.map(ex => {
+							return <th>{ex.code}</th>;
 						})}
 					</tr>
 				</thead>
 				<tbody>
-					{this.props.columns.map((el, i) => {
+					{this.rows.map((coin) => {
 						return <tr>
-							<td>
-								{el.code}
+							<td class="has-text-grey">
+								{coin.code}
 							</td>
-							{this.props.columns.map((col, c) => {
-								if (c < i) {
-									return <td class="has-background-success"></td>;
-								} else {
-									return <td></td>;
-								}
+							{this.columns.map((ex) => {
+								return this.getExchangeCoinCell(ex, coin);
 							})}
 						</tr>
 					})}
@@ -41,4 +40,22 @@ export default class PriceTable extends Component<any, any> {
 		);
 	}
 
+	getExchangeCoinCell(ex: ExchangeInfo, coin: CoinInfo) {
+		const info = this.exchangeCoins[ex.code][coin.code];
+		let klass = '';
+		if (info.gain >= 0.02) {
+			klass = 'has-background-warning has-text-grey';
+		}
+		return <td class={klass}>
+			<a href="#" >
+				{(100*info.gain).toFixed(1)}%
+			</a>
+		</td>;
+	}
+
+	clickCell(info: ExchangeCoin) {
+
+	}
+
 }
+
