@@ -19,6 +19,7 @@ export interface ExchangeCoin {
 	exchange: ExchangeInfo;
 	coin: CoinInfo;
 	gain: number;
+	selected: boolean;
 }
 
 export interface ExchangeCoinTable {
@@ -83,9 +84,6 @@ export default class Main extends Component<any, any> {
 						exchanges={this.exchanges}
 						coins={this.coins}
 						exchangeCoins={this.exchangeCoins}
-					/>
-					<ExchangeTable
-						exchanges={this.exchanges}
 					/>
 				</div>
 			</Provider>
