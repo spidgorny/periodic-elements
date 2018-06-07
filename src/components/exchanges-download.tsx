@@ -1,31 +1,26 @@
 import {h, Component} from "preact";
 import Box from "./box";
 import './exchanges-download.less';
-import * as _ from 'lodash';
 
 export default class ExchangesDownload extends Component<any, any> {
 
-	set: {
-		code: string;
-		active: boolean;
-	}[];
-
 	timer: number;
 
-	constructor() {
-		super();
-		this.setState((prevState, props) => {
-			return {
-				set: _.range(26).map(i => {
-					return String.fromCharCode('A'.charCodeAt(0) + i) +
-						String.fromCharCode('a'.charCodeAt(0) + Math.random() * 26);
-				}).map(code => {
-					return {
-						code: code,
-						active: false,
-					};
-				})
-			};
+	constructor(props) {
+		super(props);
+		// console.log('ExchangesDownload', props);
+		this.setState({
+			set: props.exchanges,
+		});
+	}
+
+	static getDerivedStateFromProps(props, state) {
+
+	}
+
+	componentWillReceiveProps(nextProps) {
+		this.setState({
+			set: nextProps.exchanges,
 		});
 	}
 
@@ -34,11 +29,11 @@ export default class ExchangesDownload extends Component<any, any> {
 	}
 
 	componentWillUnmount() {
-		// stop when not renderable
 		clearInterval(this.timer);
 	}
 
 	render() {
+		// console.log(this.state);
 		return (
 			<div class="exchanges-download">
 				{this.state.set.map(el =>
@@ -50,7 +45,7 @@ export default class ExchangesDownload extends Component<any, any> {
 
 	update() {
 		const anyKey = Math.floor(Math.random() * this.state.set.length);
-		const any = this.state.set[anyKey];
+		// const any = this.state.set[anyKey];
 		// console.log(any);
 		this.setState((prevState, props) => {
 			prevState.set[anyKey].active = Math.random() > 0.5;
