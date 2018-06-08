@@ -1,6 +1,8 @@
 import {h, Component} from "preact";
 import {CoinInfo, ExchangeCoin, ExchangeCoinTable, ExchangeInfo} from "./main";
 import ExchangeTable from "./exchange-table";
+import * as log from 'ololog';
+import {CoinExchanges} from "../models/CoinExchanges";
 
 export default class PriceTable extends Component<any, any> {
 
@@ -71,23 +73,21 @@ export default class PriceTable extends Component<any, any> {
 
 	clickCell(event: Event, info: ExchangeCoin) {
 		event.preventDefault();
-		const exchangeCoins = this.state.exchangeCoins;
-		// unselect
-		for (let e in Object.keys(exchangeCoins)) {
-			exchangeCoins[e] = exchangeCoins[e].map(set => {
-				return Object.assign(set, {
-					selected: false,
-				});
-			});
-		}
 
+		// unselect
+		const ce = new CoinExchanges(this.state.exchangeCoins);
+		ce.unselect();
+		const exchangeCoins = ce.get();
+
+		// select
 		exchangeCoins[info.exchange.code][info.coin.code].selected = true;
 		this.setState({
 			showExchangeTable: true,
 			coin: info.coin,
 			exchangeCoins,
 		});
-		document.location.hash = 'ExchangeTable';
+
+		// document.location.hash = 'ExchangeTable';
 		// window.scrollTo();
 	}
 

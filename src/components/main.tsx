@@ -67,6 +67,7 @@ export default class Main extends Component<any, any> {
 					exchange: e,
 					coin: c,
 					gain: Math.random() / 49.0,
+					selected: false,
 				}
 			}
 			this.exchangeCoins[e.code] = set;

@@ -17,6 +17,9 @@
   "author": "Albert Alises",
   "license": "MIT",
   "dependencies": {
+    "babel-plugin-transform-es2017-object-entries": "0.0.4",
+    "bulma": "^0.7.1",
+    "ololog": "^1.1.103",
     "preact": "^8.2.9",
     "preact-bind-group": "^2.0.1",
     "redux-zero": "^4.12.0"
