@@ -20,7 +20,7 @@ export default class PriceTable extends Component<any, any> {
 	}
 
 	render() {
-		console.log('PriceTable.render', this.columns.length);
+		// console.log('PriceTable.render', this.columns.length);
 		return (
 			<div>
 				<table class="table is-fullwidth is-narrow is-separated has-background-black is-size-7">
@@ -57,16 +57,25 @@ export default class PriceTable extends Component<any, any> {
 
 	getExchangeCoinCell(ex: ExchangeInfo, coin: CoinInfo) {
 		const info: ExchangeCoin = this.state.exchangeCoins[ex.code][coin.code];
-		let klass = '';
-		if (info.gain >= 0.02) {
-			klass = 'has-background-warning has-text-grey';
-		}
+		let klass = 'has-text-right';
+		// if (info.gain >= 0.02) {
+		// 	klass += ' has-background-warning has-text-grey';
+		// }
 		if (info.selected) {
-			klass = ' has-background-primary';
+			klass += ' has-background-primary';
+		}
+
+		let aClass = '';
+		if (info.isMin) {
+			aClass += ' has-text-danger';
+		}
+		if (info.isMax) {
+			aClass += ' has-text-success';
 		}
 		return <td class={klass}>
-			<a href="#" onClick={e => this.clickCell(e, info)}>
-				{(100 * info.gain).toFixed(1)}%
+			<a href="#" class={aClass} onClick={e => this.clickCell(e, info)}>
+				{/*{(100 * info.gain).toFixed(1)}%*/}
+				{info.lastPrice.toFixed(2)}
 			</a>
 		</td>;
 	}

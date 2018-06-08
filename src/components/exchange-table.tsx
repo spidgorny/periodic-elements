@@ -6,14 +6,14 @@ export default class ExchangeTable extends Component<any, any> {
 
 	constructor(props) {
 		super(props);
-		console.log('ExchangeTable.constructor', props.exchanges.length);
-		console.log('ExchangeTable.constructor', this.columns.length);
+		// console.log('ExchangeTable.constructor', props.exchanges.length);
+		// console.log('ExchangeTable.constructor', this.columns.length);
 	}
 
 	render(props, state) {
-		console.log('ExchangeTable.render', this.columns.length);
-		console.log(props);
-		console.log(state);
+		// console.log('ExchangeTable.render', this.columns.length);
+		// console.log('props', props);
+		// console.log('state', state);
 		return (
 			<div>
 				<a name="ExchangeTable"></a>
@@ -34,11 +34,11 @@ export default class ExchangeTable extends Component<any, any> {
 									{el.code}
 								</td>
 								{this.columns.map((col, c) => {
+									let klass = '';
 									if (c < i) {
-										return <td class="has-background-success"></td>;
-									} else {
-										return <td></td>;
+										klass += " has-background-success";
 									}
+									return <td class={klass}></td>;
 								})}
 							</tr>
 						})}

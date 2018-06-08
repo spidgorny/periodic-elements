@@ -5,6 +5,7 @@ import ExchangesDownload from "./exchanges-download";
 import * as _ from 'lodash';
 import PriceTable from "./price-table";
 import ExchangeTable from "./exchange-table";
+import {CoinExchanges} from "../models/CoinExchanges";
 
 export interface ExchangeInfo {
 	code: string;
@@ -19,7 +20,10 @@ export interface ExchangeCoin {
 	exchange: ExchangeInfo;
 	coin: CoinInfo;
 	gain: number;
+	lastPrice: number;
 	selected: boolean;
+	isMin: boolean;
+	isMax: boolean;
 }
 
 export interface ExchangeCoinTable {
@@ -59,19 +63,9 @@ export default class Main extends Component<any, any> {
 			};
 		});
 
-		this.exchangeCoins = {};
-		for (let e of this.exchanges) {
-			const set = {};
-			for (let c of this.coins) {
-				set[c.code] = {
-					exchange: e,
-					coin: c,
-					gain: Math.random() / 49.0,
-					selected: false,
-				}
-			}
-			this.exchangeCoins[e.code] = set;
-		}
+		const ec = new CoinExchanges();
+		ec.generate(this.exchanges, this.coins);
+		this.exchangeCoins = ec.get();
 	}
 
 	render() {
