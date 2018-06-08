@@ -3,6 +3,7 @@ import {CoinInfo, ExchangeCoin, ExchangeCoinTable, ExchangeInfo} from "./main";
 import ExchangeTable from "./exchange-table";
 import * as log from 'ololog';
 import {CoinExchanges} from "../models/CoinExchanges";
+import * as _ from 'lodash';
 
 export default class PriceTable extends Component<any, any> {
 
@@ -12,11 +13,12 @@ export default class PriceTable extends Component<any, any> {
 
 	constructor(props) {
 		super(props);
-		console.log('PriceTable.constructor');
+		// console.log('PriceTable.constructor');
 		this.setState({
 			showExchangeTable: false,
 			exchangeCoins: props.exchangeCoins,
 		});
+		props.refMain.bindToModelUpdates(this);
 	}
 
 	render() {
@@ -26,7 +28,9 @@ export default class PriceTable extends Component<any, any> {
 				<table class="table is-fullwidth is-narrow is-separated has-background-black is-size-7">
 					<thead>
 					<tr class="has-text-grey">
-						<td></td>
+						<td>coin</td>
+						<td>diff</td>
+						<td>%</td>
 						{this.columns.map(ex => {
 							return <th>{ex.code}</th>;
 						})}
@@ -37,6 +41,12 @@ export default class PriceTable extends Component<any, any> {
 						return <tr>
 							<td class="has-text-grey">
 								{coin.code}
+							</td>
+							<td class="has-text-grey">
+								{this.getDiff(coin).toFixed(3)}
+							</td>
+							<td class="has-text-grey">
+								{(100*this.getGain(coin)).toFixed(3)}%
 							</td>
 							{this.columns.map((ex) => {
 								return this.getExchangeCoinCell(ex, coin);
@@ -56,6 +66,9 @@ export default class PriceTable extends Component<any, any> {
 	}
 
 	getExchangeCoinCell(ex: ExchangeInfo, coin: CoinInfo) {
+		if (!(ex.code in this.state.exchangeCoins)) {
+			return <td></td>;
+		}
 		const info: ExchangeCoin = this.state.exchangeCoins[ex.code][coin.code];
 		let klass = 'has-text-right';
 		// if (info.gain >= 0.02) {
@@ -98,6 +111,26 @@ export default class PriceTable extends Component<any, any> {
 
 		// document.location.hash = 'ExchangeTable';
 		// window.scrollTo();
+	}
+
+	getDiff(coin: CoinInfo) {
+		const coinRow = _.map(this.state.exchangeCoins, coin.code);
+		const min = _.find(coinRow, (info: ExchangeCoin) => info.isMin);
+		const max = _.find(coinRow, (info: ExchangeCoin) => info.isMax);
+		if (min && max && min !== max) {
+			return max.lastPrice - min.lastPrice;
+		}
+		return 0;
+	}
+
+	getGain(coin: CoinInfo) {
+		const coinRow = _.map(this.state.exchangeCoins, coin.code);
+		const min = _.find(coinRow, (info: ExchangeCoin) => info.isMin);
+		const max = _.find(coinRow, (info: ExchangeCoin) => info.isMax);
+		if (min && max && min !== max) {
+			return (max.lastPrice / min.lastPrice) - 1;
+		}
+		return 0;
 	}
 
 }

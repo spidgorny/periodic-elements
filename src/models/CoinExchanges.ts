@@ -4,30 +4,38 @@ import * as _ from 'lodash';
 
 export class CoinExchanges {
 
-	exchanges: ExchangeInfo[];
-	coins: CoinInfo[];
+	protected exchanges: ExchangeInfo[];
+	protected coins: CoinInfo[];
+	protected coinBase: {
+		[key: string]: number
+	};
+	protected onUpdate: Function;
 
 	constructor(protected data: ExchangeCoinTable = {}) {
+	}
 
+	setCoinBase(coins: CoinInfo[]) {
+		const coinBase = {};	// starting price for each coin
+		for (let c of coins) {
+			coinBase[c.code] = Math.random() * 1000;
+		}
+		return coinBase;
 	}
 
 	generate(exchanges: ExchangeInfo[], coins: CoinInfo[]) {
 		this.exchanges = exchanges;
 		this.coins = coins;
-		const coinBase = {};	// starting price for each coin
 		const exchangeCoins = {};
 		for (let e of this.exchanges) {
 			const set = {};
 			for (let c of this.coins) {
-				coinBase[c.code] = c.code in coinBase
-					? coinBase[c.code] : Math.random() * 1000;
 				set[c.code] = {
 					exchange: e,
 					coin: c,
-					gain: Math.random() / 49.0,
-					lastPrice: coinBase[c.code] + Math.random() * 10 - 5,
+					// gain: Math.random() / 49.0,
+					lastPrice: this.coinBase[c.code] + Math.random() * 10 - 5,
 					selected: false,
-				}
+				} as ExchangeCoin;
 			}
 			exchangeCoins[e.code] = set;
 		}
@@ -35,24 +43,31 @@ export class CoinExchanges {
 		// find min and max
 		// log(Object.keys(exchangeCoins));
 		for (let c of this.coins) {
-			const coinPrices = _.map(exchangeCoins, c.code);
-			const coinValues = _.map(coinPrices, 'lastPrice');
-			const min = _.min(coinValues).toFixed(3);
-			const max = _.max(coinValues).toFixed(3);
-			log(c.code, min, max);
-			for (let cp of coinPrices) {
-				if (cp.lastPrice.toFixed(3) == min) {
-					log('cp.min', cp.lastPrice.toFixed(3));
-					cp.isMin = true;
-				}
-				if (cp.lastPrice.toFixed(3) == max) {
-					cp.isMax = true;
-				}
-				exchangeCoins[cp.exchange.code][cp.coin.code] = cp;
-			}
+			this.setMinMax(exchangeCoins, c);
 		}
 		this.data = exchangeCoins;
 		return this;
+	}
+
+	setMinMax(exchangeCoins: ExchangeCoinTable, c: CoinInfo) {
+		let coinPrices = _.map(exchangeCoins, c.code);
+		coinPrices = _.compact(coinPrices);
+		const coinValues = _.map(coinPrices, 'lastPrice');
+		const min = _.min(coinValues).toFixed(3);
+		const max = _.max(coinValues).toFixed(3);
+		// log(c.code, min, max);
+		for (let cp of coinPrices) {
+			if (cp.lastPrice.toFixed(3) == min) {
+				// log('cp.min', cp.lastPrice.toFixed(3));
+				cp.isMin = true;
+			} else if (cp.lastPrice.toFixed(3) == max) {
+				cp.isMax = true;
+			} else {
+				cp.isMin = false;
+				cp.isMax = false;
+			}
+			exchangeCoins[cp.exchange.code][cp.coin.code] = cp;
+		}
 	}
 
 	unselect() {
@@ -66,6 +81,36 @@ export class CoinExchanges {
 
 	get() {
 		return this.data;
+	}
+
+	startGeneration(exchanges: ExchangeInfo[], coins: CoinInfo[], onUpdate: Function) {
+		this.exchanges = exchanges;
+		this.coins = coins;
+		this.onUpdate = onUpdate;
+		this.coinBase = this.setCoinBase(this.coins);
+		setInterval(this.generateOneExchange.bind(this), 1000);
+	}
+
+	generateOneExchange() {
+		const randomE = Math.floor(Math.random() * this.exchanges.length);
+		const e = this.exchanges[randomE];
+		for (let c of this.coins) {
+			if (!(e.code in this.data)) {
+				this.data[e.code] = {};
+			}
+			this.data[e.code][c.code] = {
+				exchange: e,
+				coin: c,
+				lastPrice: this.coinBase[c.code] + Math.random() * 10 - 5,
+				selected: false,
+			};
+		}
+		for (let c of this.coins) {
+			this.setMinMax(this.data, c);
+		}
+		this.onUpdate
+			? this.onUpdate()
+			: null;
 	}
 
 }

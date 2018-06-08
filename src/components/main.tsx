@@ -19,11 +19,10 @@ export interface CoinInfo {
 export interface ExchangeCoin {
 	exchange: ExchangeInfo;
 	coin: CoinInfo;
-	gain: number;
 	lastPrice: number;
-	selected: boolean;
-	isMin: boolean;
-	isMax: boolean;
+	selected?: boolean;
+	isMin?: boolean;
+	isMax?: boolean;
 }
 
 export interface ExchangeCoinTable {
@@ -40,9 +39,13 @@ export default class Main extends Component<any, any> {
 
 	exchangeCoins: ExchangeCoinTable;
 
+	priceTable: PriceTable;	// component reference
+
 	constructor() {
 		super();
-		this.exchanges = _.range(26).map(i => {
+
+		const exchanges = 15;
+		this.exchanges = _.range(exchanges).map(i => {
 			return String.fromCharCode('A'.charCodeAt(0) + i) +
 				String.fromCharCode('a'.charCodeAt(0) + Math.random() * 26);
 		}).map(code => {
@@ -52,7 +55,7 @@ export default class Main extends Component<any, any> {
 			};
 		});
 
-		this.coins = _.range(50).map(i => {
+		this.coins = _.range(25).map(i => {
 			return {
 				code: String.fromCharCode('A'.charCodeAt(0) +
 					Math.random() * 26) +
@@ -64,12 +67,13 @@ export default class Main extends Component<any, any> {
 		});
 
 		const ec = new CoinExchanges();
-		ec.generate(this.exchanges, this.coins);
+		//ec.generate(this.exchanges, this.coins);
+		ec.startGeneration(this.exchanges, this.coins, this.onModelChange.bind(this));
 		this.exchangeCoins = ec.get();
 	}
 
 	render() {
-		console.log('Main', this.exchanges.length);
+		// console.log('Main', this.exchanges.length);
 		return (
 			<Provider store={appStore}>
 				<div>
@@ -79,10 +83,21 @@ export default class Main extends Component<any, any> {
 						exchanges={this.exchanges}
 						coins={this.coins}
 						exchangeCoins={this.exchangeCoins}
+						refMain={this}
 					/>
 				</div>
 			</Provider>
 		);
+	}
+
+	bindToModelUpdates(pt: PriceTable) {
+		this.priceTable = pt;
+	}
+
+	onModelChange() {
+		this.priceTable
+			? this.priceTable.forceUpdate()
+			: null;
 	}
 
 }
